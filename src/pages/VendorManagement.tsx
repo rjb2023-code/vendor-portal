@@ -1,21 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Building2, Search, Filter, Download, Plus, MoreVertical, 
-  ShieldAlert, ShieldCheck, Clock, CheckCircle2, XCircle, AlertTriangle, UserCheck
+  ShieldAlert, ShieldCheck, Clock, CheckCircle2, XCircle, AlertTriangle, UserCheck, Loader2
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+
+const DUMMY_VENDORS = [
+  { id: 'V-10042', name: 'Acme Corp Global', category: 'IT Hardware', tier: 'Strategic', status: 'Active', compliance: 'Verified', risk: 'Low', spend: '$1.2M' },
+  { id: 'V-10043', name: 'Nexus Logistics', category: 'Transport', tier: 'Operational', status: 'Suspended', compliance: 'Audit Req', risk: 'Medium', spend: '$450K' },
+  { id: 'V-10044', name: 'Titan Manufacturing', category: 'Raw Materials', tier: 'Strategic', status: 'Active', compliance: 'Verified', risk: 'Low', spend: '$4.5M' },
+  { id: 'V-10045', name: 'CloudNet Secure', category: 'Software', tier: 'Tactical', status: 'Blacklisted', compliance: 'Failed', risk: 'High', spend: '$12K' },
+];
 
 export function VendorManagement() {
   const [activeTab, setActiveTab] = useState('directory');
 
-  const [vendors, setVendors] = useState([
-    { id: 'V-10042', name: 'Acme Corp Global', category: 'IT Hardware', tier: 'Strategic', status: 'Active', compliance: 'Verified', risk: 'Low', spend: '$1.2M' },
-    { id: 'V-10043', name: 'Nexus Logistics', category: 'Transport', tier: 'Operational', status: 'Suspended', compliance: 'Audit Req', risk: 'Medium', spend: '$450K' },
-    { id: 'V-10044', name: 'Titan Manufacturing', category: 'Raw Materials', tier: 'Strategic', status: 'Active', compliance: 'Verified', risk: 'Low', spend: '$4.5M' },
-    { id: 'V-10045', name: 'CloudNet Secure', category: 'Software', tier: 'Tactical', status: 'Blacklisted', compliance: 'Failed', risk: 'High', spend: '$12K' },
-    { id: 'V-10046', name: 'OfficePlus Supplies', category: 'Consumables', tier: 'Tactical', status: 'Active', compliance: 'Verified', risk: 'Low', spend: '$85K' },
-    { id: 'V-10047', name: 'Apex Legal Partners', category: 'Services', tier: 'Operational', status: 'Pending', compliance: 'Pending', risk: '-', spend: '$0' },
-  ]);
+  const [vendors, setVendors] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [usingDummy, setUsingDummy] = useState(false);
+
+  useEffect(() => {
+    fetchVendors();
+  }, []);
+
+  const fetchVendors = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/vendors');
+      const data = await res.json();
+      if (res.ok && Array.isArray(data)) {
+        setVendors(data);
+        setUsingDummy(false);
+      } else {
+        setVendors(DUMMY_VENDORS);
+        setUsingDummy(true);
+      }
+    } catch (e) {
+      console.error(e);
+      setVendors(DUMMY_VENDORS);
+      setUsingDummy(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [onboardingQueue] = useState([
     { id: 'REQ-882', name: 'GlobalSource LLC', category: 'Services', step: 'Tax Verification', SLA: '2 days overdue', status: 'Waiting on Vendor' },
@@ -42,20 +69,83 @@ export function VendorManagement() {
     }
   };
 
-  const handleAction = (id: string, action: string) => {
-    setVendors(vendors.map(v => {
-      if (v.id === id) {
-        if (action === 'activate') return { ...v, status: 'Active' };
-        if (action === 'deactivate') return { ...v, status: 'Suspended' };
-        if (action === 'blacklist') return { ...v, status: 'Blacklisted', compliance: 'Failed', risk: 'High' };
+  const handleAction = async (id: string, action: string) => {
+    const v = vendors.find(x => x.id === id);
+    if (!v) return;
+
+    let newStatus = v.status;
+    let newCompliance = v.compliance;
+    let newRisk = v.risk;
+
+    if (action === 'activate') {
+      newStatus = 'Active';
+    } else if (action === 'deactivate') {
+      newStatus = 'Suspended';
+    } else if (action === 'blacklist') {
+      newStatus = 'Blacklisted';
+      newCompliance = 'Failed';
+      newRisk = 'High';
+    }
+
+    setVendors(vendors.map(ven => {
+      if (ven.id === id) {
+        return { ...ven, status: newStatus, compliance: newCompliance, risk: newRisk };
       }
-      return v;
+      return ven;
     }));
+
+    if (!usingDummy) {
+      try {
+        await fetch(`/api/vendors/${id}/status`, {
+           method: 'PUT',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ status: newStatus, compliance: newCompliance, risk: newRisk })
+        });
+      } catch (e) {
+         console.error("Gagal mengupdate ke server", e);
+      }
+    }
+  };
+
+  const handleAddVendor = async () => {
+    const name = prompt("Nama Vendor Baru:");
+    if (!name) return;
+    const category = prompt("Kategori (misal: Services, IT Hardware):") || "Services";
+    const tier = prompt("Tier (Strategic, Operational, Tactical):") || "Tactical";
+    
+    if (usingDummy) {
+      alert("Anda sedang menggunakan data simulasi. Harap sambungkan Database dengan Render untuk menambah data asli.");
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/vendors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, category, tier })
+      });
+      if (res.ok) {
+        fetchVendors(); // Refresh data
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
     <div className="space-y-4">
       {/* Page Header */}
+      {usingDummy && (
+        <div className="bg-orange-50 border border-orange-200 text-orange-800 px-4 py-3 rounded-md flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-orange-500" />
+            <p className="text-sm">
+              <strong className="font-semibold">Database belum terhubung.</strong> Menampilkan data simulasi (dummy). Silakan buka <a href="/api/init-db" target="_blank" className="underline text-orange-600 font-medium">/api/init-db</a> setelah mengatur DATABASE_URL, atau hubungkan Server dengan Render.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
@@ -70,7 +160,7 @@ export function VendorManagement() {
           <button className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
             <Download className="w-4 h-4" /> Export
           </button>
-          <button className="flex items-center gap-2 px-3 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 transition-colors shadow-sm">
+          <button onClick={handleAddVendor} className="flex items-center gap-2 px-3 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 transition-colors shadow-sm">
             <Plus className="w-4 h-4" /> New Vendor Registration
           </button>
         </div>
@@ -123,10 +213,15 @@ export function VendorManagement() {
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden min-h-[400px]">
-             <div className="overflow-x-auto pb-4">
-              <table className="w-full text-sm text-left whitespace-nowrap">
-                <thead className="bg-[#f8f9fa] text-gray-600 font-semibold border-b border-gray-200">
-                  <tr>
+             {loading ? (
+               <div className="flex justify-center items-center h-64 text-gray-400">
+                 <Loader2 className="w-8 h-8 animate-spin" />
+               </div>
+             ) : (
+               <div className="overflow-x-auto pb-4">
+                <table className="w-full text-sm text-left whitespace-nowrap">
+                  <thead className="bg-[#f8f9fa] text-gray-600 font-semibold border-b border-gray-200">
+                    <tr>
                     <th className="px-4 py-3">Vendor ID</th>
                     <th className="px-4 py-3">Vendor Name</th>
                     <th className="px-4 py-3">Category</th>
@@ -175,6 +270,7 @@ export function VendorManagement() {
                 </tbody>
               </table>
             </div>
+          )}
           </div>
         </>
       )}
