@@ -1,48 +1,59 @@
-# Panduan Deployment VendorX ERP (Untuk Pemula)
+# Panduan Deployment VendorX ERP dengan PostgreSQL Asli
 
-Karena saat ini kita membangun **tampilan depan (Frontend)** menggunakan React & Vite, langkah paling mudah untuk mengonlinekan aplikasi ini adalah menggunakan **Vercel** untuk hosting tampilan, dan **Supabase** untuk Database/Server. Semuanya gratis untuk pemula!
+Bagus sekali! Karena Anda ingin menggunakan database **PostgreSQL** yang sesungguhnya (bukan Supabase yang merupakan Database-as-a-Service), aplikasi ini perlu memiliki sebuah **Backend Server (Node.js/Express)** untuk menghubungkan tampilan ke database dengan aman.
 
-Berikut adalah panduan langkah demi langkahnya:
+Jangan khawatir, saya baru saja mengubah konfigurasi aplikasi ini secara otomatis. Sekarang aplikasi Anda sudah disiapkan sebagai aplikasi "Full-Stack" yang siap terhubung dengan PostgreSQL. 
 
-## Langkah 1: Ekspor Kode ke GitHub
-Sebelum mengonlinekan, kita harus menyimpan kode ini ke akun GitHub Anda.
-1. Di Google AI Studio (tempat Anda membaca ini), cari tombol **Export** (biasanya di kanan atas atau di menu pengaturan).
-2. Pilih opsi **Export to GitHub**.
-3. Anda akan diminta untuk login/otorisasi akun GitHub Anda.
-4. Buat repository baru, misalnya beri nama `vendorx-erp`.
-5. Selesai! Sekarang semua kode yang sudah kita buat ada di GitHub Anda.
-
-## Langkah 2: Online-kan Tampilan dengan Vercel (Gratis)
-Vercel adalah platform yang sangat mudah untuk mengonlinekan aplikasi berbasis React/Vite.
-1. Buka [vercel.com](https://vercel.com/) di tab baru.
-2. Klik **Sign Up** dan daftar menggunakan akun **GitHub** Anda.
-3. Setelah masuk ke Dashboard Vercel, klik tombol **"Add New..."** lalu pilih **"Project"**.
-4. Vercel akan otomatis menampilkan daftar repository GitHub Anda. Cari `vendorx-erp` dan klik tombol **"Import"**.
-5. Di halaman konfigurasi yang muncul:
-   - **Framework Preset**: Vercel akan otomatis mendeteksi ini sebagai "Vite". Biarkan saja.
-   - **Root Directory**: Biarkan default.
-   - **Build and Output Settings**: Biarkan default.
-6. Klik tombol **"Deploy"**.
-7. Tunggu sekitar 1-2 menit. Setelah selesai, layar akan menampilkan animasi konfeti 🎉 dan Anda akan mendapatkan **URL publik** (contoh: `https://vendorx-erp.vercel.app`) yang bisa diakses siapa saja!
-
-## Langkah 3: Siapkan Database Asli dengan Supabase
-Saat ini, tabel vendor dan invoice di aplikasi kita masih menggunakan **data bohongan (dummy data)** yang diketik di dalam kode. Agar aplikasi bisa benar-benar menyimpan data, kita butuh Database. **Supabase** adalah backend lengkap (database PostgreSQL + Autentikasi) yang gratis dan sangat cocok dipasangkan dengan Vercel.
-1. Buka [supabase.com](https://supabase.com/) dan login menggunakan **GitHub**.
-2. Klik **"New Project"**.
-3. Pilih Organisasi (biasanya nama Anda), lalu beri nama project, misal: `VendorX Database`.
-4. Buat **Database Password** yang kuat dan simpan baik-baik!
-5. Pilih Region yang dekat dengan pengguna Anda (misal: **Singapore**).
-6. Klik **"Create new project"**. Butuh beberapa menit sampai database siap.
-7. Setelah siap, pergi ke menu **Project Settings > API**. Di sana Anda akan melihat `Project URL` dan `anon / public API Key`. Simpan kedua info ini, kita akan membutuhkannya nanti.
-
-## Langkah 4: Menghubungkan Vercel dan Supabase (Tahap Berikutnya)
-Agar aplikasi Vercel Anda bisa membaca dan menyimpan ke Database Supabase:
-1. Kita harus mengubah kode aplikasi ini (di file `.env.example` dan menambah library `@supabase/supabase-js`).
-2. Kode data *dummy* akan kita ganti dengan kode untuk "*fetch*" (mengambil) data dari Supabase.
-3. Di Vercel, kita perlu memasukkan `Project URL` dan `API Key` Supabase ke menu **Settings > Environment Variables**, lalu lakukan Re-deploy.
+Berikut ini adalah panduan lengkap dari awal memindahkan kode ke GitHub hingga siap di-online-kan (Hosting) secara gratis menggunakan **Render.com**.
 
 ---
 
-### Apa yang harus Anda lakukan sekarang?
-Fokus selesaikan **Langkah 1 & 2** terlebih dahulu. 
-Ekspor kode ke GitHub, daftar Vercel, dan tekan *Deploy*. Jika sudah berhasil mendapatkan link Vercel-nya, beri tahu saya, dan kita akan mulai memprogram **Langkah 3 & 4** untuk menghubungkan database!
+## Langkah 1: Ekspor Kode ke GitHub
+Sebelum mengonlinekan, kita harus menyimpan kode ini ke akun GitHub Anda.
+1. Di layar Google AI Studio Anda, cari tombol **Export** di menu pengaturan atau pojok kanan atas.
+2. Temukan opsi **Export to GitHub**.
+3. Jika diminta, silakan *log in* dan berikan otorisasi ke akun GitHub Anda.
+4. Buat repository baru, misalnya beri nama `vendorx-erp`.
+5. Semua file (termasuk config Server & Vite) sudah masuk ke akun GitHub Anda.
+
+---
+
+## Langkah 2: Buat Database PostgreSQL Gratis di Render
+Render.com menawarkan server dan database PostgreSQL yang gratis dan sangat gampang di-set up untuk pemula.
+1. Buka [Render.com](https://render.com/) di tab baru dan daftar/login dengan **GitHub**.
+2. Setelah masuk ke *Dashboard*, klik tombol **New +** dan pilih **PostgreSQL**.
+3. Isi namanya, misal: `vendorx-db`.
+4. Bagian Region, pilih salah satu (misalnya Singapore). 
+5. Biarkan *PostgreSQL Version* di setting default (biasanya 15 atau 16) dan Instace Type di ukuran **Free**.
+6. Klik **Create PostgreSQL**. 
+7. Hanya butuh beberapa menit hingga status database Anda menjadi **Available**. 
+8. Di halaman detail database tersebut, *scroll* ke bawah dan cari tulisan **External Database URL** (Bentuknya seperti: `postgres://user:password@host...`). Salin (copy) link ini. Kita akan memerlukannya di tahap selanjutnya.
+
+---
+
+## Langkah 3: Online-kan Aplikasi + Server di Render
+Setelah langkah 2, kini Anda kembali ke menu utama Render (Dashboard).
+1. Klik **New +** dan pilih **Web Service**.
+2. Anda akan disuruh memilih proyek dari GitHub. Silakan cari `vendorx-erp` dan hubungkan (Connect).
+3. Di halaman pengaturan proyek:
+   - **Name**: Isi sesuai keinginan (misal: `vendorx-pro`).
+   - **Environment**: Pilih `Node`.
+   - **Build Command**: Ketik `npm install && npm run build` (Artinya komputer Render akan menginstall library yang dikasih dan menggabungkan kodenya jadi 1).
+   - **Start Command**: Ketik `npm run start` (Artinya Render akan menyalakan file server).
+4. *Scroll* ke bawah dan klik tombol **Advanced** (Atau perhatikan tombol **Environment Variables**).
+5. Klik **Add Environment Variable**. 
+   - Pada kolom `Key`, ketik: `DATABASE_URL`
+   - Pada kolom `Value`, **tempel (paste)** link yang Anda salin dari Database di Langkah 2.
+6. Anda bebas menggunakan Plan **Free** lalu klik **Create Web Service**.
+7. Sekarang bersabarlah menunggu 3-5 menit sampai proses "Build" selesai dan status menjadi *Live*.
+
+---
+
+## Langkah 4: Tinjau dan Tambahkan Tabel ke Database (Jika perlu)
+Aplikasi Anda sudah memiliki rancangan antarmuka (UI). Namun, karena file server sudah saya siapkan dan berhasil terkoneksi, *database* aslinya masih **kosong belum ada tabelnya**.
+
+Untuk membuat aplikasinya mengalir (bisa ditambah vendor asli), Anda punya 2 pilihan selanjutnya:
+1. Hubungi saya di chat ini: *"Database saya sudah jadi, tolong bantu saya membuat kode di aplikasi ini untuk menyimpan data ke database (membuat query SQL)."*
+2. Dan saya akan me-remix aplikasinya untuk memberikan logika "Insert/Update/Select" di dalam `server.ts` agar tabel Anda aktif merekam data secara *real-time*.
+
+Semangat menyelesaikan Langkah 1 s.d. 3! Jika sudah mendapat link dari Render, bagikan kepada saya.
