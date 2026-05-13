@@ -15,6 +15,8 @@ import { UserManagement } from './pages/UserManagement';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 import { VendorIntelligence } from './pages/VendorIntelligence';
+import { VendorRegistration } from './pages/VendorRegistration';
+import { VendorGuidelines } from './pages/VendorGuidelines';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -32,6 +34,8 @@ function AppRoutes() {
       {/* Protected Routes */}
       <Route path="/" element={<ProtectedRoute><ExecutiveDashboard /></ProtectedRoute>} />
       <Route path="/vendors" element={<ProtectedRoute><VendorManagement /></ProtectedRoute>} />
+      <Route path="/vendors/register" element={<ProtectedRoute><VendorRegistration /></ProtectedRoute>} />
+      <Route path="/vendors/guidelines" element={<ProtectedRoute><VendorGuidelines /></ProtectedRoute>} />
       <Route path="/invoices" element={<ProtectedRoute><InvoiceManagement /></ProtectedRoute>} />
       <Route path="/contracts" element={<ProtectedRoute><Architecture /></ProtectedRoute>} />
       <Route path="/intelligence" element={<ProtectedRoute><VendorIntelligence /></ProtectedRoute>} />

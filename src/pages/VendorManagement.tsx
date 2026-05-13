@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Building2, Search, Filter, Download, Plus, MoreVertical, 
-  ShieldAlert, ShieldCheck, Clock, CheckCircle2, XCircle, AlertTriangle, UserCheck, Loader2
+  ShieldAlert, ShieldCheck, Clock, CheckCircle2, XCircle, AlertTriangle, UserCheck, Loader2, Upload, FileText
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+
+import { useNavigate } from 'react-router-dom';
 
 const DUMMY_VENDORS = [
   { id: 'V-10042', name: 'Acme Corp Global', category: 'IT Hardware', tier: 'Strategic', status: 'Active', compliance: 'Verified', risk: 'Low', spend: '$1.2M' },
@@ -13,6 +15,7 @@ const DUMMY_VENDORS = [
 ];
 
 export function VendorManagement() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('directory');
 
   const [vendors, setVendors] = useState<any[]>([]);
@@ -108,28 +111,7 @@ export function VendorManagement() {
   };
 
   const handleAddVendor = async () => {
-    const name = prompt("Nama Vendor Baru:");
-    if (!name) return;
-    const category = prompt("Kategori (misal: Services, IT Hardware):") || "Services";
-    const tier = prompt("Tier (Strategic, Operational, Tactical):") || "Tactical";
-    
-    if (usingDummy) {
-      alert("Anda sedang menggunakan data simulasi. Harap sambungkan Database dengan Render untuk menambah data asli.");
-      return;
-    }
-
-    try {
-      const res = await fetch('/api/vendors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, category, tier })
-      });
-      if (res.ok) {
-        fetchVendors(); // Refresh data
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    navigate('/vendors/register');
   };
 
   return (
@@ -157,6 +139,9 @@ export function VendorManagement() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            <Upload className="w-4 h-4" /> Import Data
+          </button>
           <button className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
             <Download className="w-4 h-4" /> Export
           </button>
@@ -260,6 +245,9 @@ export function VendorManagement() {
                           {vendor.status !== 'Blacklisted' && (
                             <button onClick={() => handleAction(vendor.id, 'blacklist')} className="text-xs bg-red-50 text-red-700 border border-red-200 px-2 py-1 rounded hover:bg-red-100">Blacklist</button>
                           )}
+                          <button title="View Details" className="p-1 px-2 text-blue-600 hover:text-blue-800 bg-blue-50 border border-blue-200 rounded flex items-center justify-center">
+                             <FileText className="w-4 h-4" />
+                          </button>
                           <button className="p-1 px-2 text-gray-400 hover:text-gray-600">
                             <MoreVertical className="w-4 h-4" />
                           </button>
